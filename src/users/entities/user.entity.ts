@@ -1,13 +1,12 @@
 import {
+  Field,
   InputType,
   ObjectType,
-  Field,
   registerEnumType,
 } from '@nestjs/graphql';
 import { BeforeInsert, Column, Entity } from 'typeorm';
-import { CoreEntity } from '../../common/entities/core.entity';
-// import argon2 from 'argon2';
 import * as bcrypt from 'bcrypt';
+import { CoreEntity } from 'src/common/entities/core.entity';
 import { InternalServerErrorException } from '@nestjs/common';
 import { IsEmail, IsEnum } from 'class-validator';
 
@@ -19,24 +18,21 @@ enum UserRole {
 
 registerEnumType(UserRole, { name: 'UserRole' });
 
-@InputType()
+@InputType({ isAbstract: true })
 @ObjectType()
 @Entity()
 export class User extends CoreEntity {
   @Column()
-  @Field((type) => String)
+  @Field(type => String)
   @IsEmail()
   email: string;
 
   @Column()
-  @Field((type) => String)
+  @Field(type => String)
   password: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserRole,
-  })
-  @Field((type) => UserRole)
+  @Column({ type: 'enum', enum: UserRole })
+  @Field(type => UserRole)
   @IsEnum(UserRole)
   role: UserRole;
 
@@ -45,6 +41,7 @@ export class User extends CoreEntity {
     try {
       this.password = await bcrypt.hash(this.password, 10);
     } catch (e) {
+      console.log(e);
       throw new InternalServerErrorException();
     }
   }

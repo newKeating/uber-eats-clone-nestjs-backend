@@ -1,30 +1,36 @@
 import { UseGuards } from '@nestjs/common';
-import { Args, Mutation, Query, Resolver } from '@nestjs/graphql';
-import { AuthUser } from '../auth/auth-user.decorator';
-import { AuthGuard } from '../auth/auth.guard';
+import { Resolver, Query, Mutation, Args, Context } from '@nestjs/graphql';
+import { AuthUser } from 'src/auth/auth-user.decorator';
+import { AuthGuard } from 'src/auth/auth.guard';
 import {
   CreateAccountInput,
   CreateAccountOutput,
 } from './dtos/create-account.dto';
 import { LoginInput, LoginOutput } from './dtos/login.dto';
 import { User } from './entities/user.entity';
-import { UsersService } from './users.service';
+import { UserService } from './users.service';
 
-@Resolver((of) => User)
-export class UsersResolver {
-  constructor(private readonly usersService: UsersService) {}
+@Resolver(of => User)
+export class UserResolver {
+  constructor(private readonly usersService: UserService) {}
 
-  @Query((returns) => Boolean)
-  getUsers() {
+  @Query(returns => Boolean)
+  hi() {
     return true;
   }
 
-  @Mutation((returns) => CreateAccountOutput)
+  @Mutation(returns => CreateAccountOutput)
   async createAccount(
     @Args('input') createAccountInput: CreateAccountInput,
   ): Promise<CreateAccountOutput> {
     try {
-      return this.usersService.createAccount(createAccountInput);
+      const { ok, error } = await this.usersService.createAccount(
+        createAccountInput,
+      );
+      return {
+        ok,
+        error,
+      };
     } catch (error) {
       return {
         error,
@@ -33,10 +39,11 @@ export class UsersResolver {
     }
   }
 
-  @Mutation((returns) => LoginOutput)
+  @Mutation(returns => LoginOutput)
   async login(@Args('input') loginInput: LoginInput): Promise<LoginOutput> {
     try {
-      return this.usersService.login(loginInput);
+      const { ok, error, token } = await this.usersService.login(loginInput);
+      return { ok, error, token };
     } catch (error) {
       return {
         ok: false,
@@ -45,9 +52,9 @@ export class UsersResolver {
     }
   }
 
-  // @Query((returns) => User)
-  // @UseGuards(AuthGuard)
-  // me(@AuthUser() authUser: User): User {
-  //   return authUser;
-  // }
+  @Query(returns => User)
+  @UseGuards(AuthGuard)
+  me(@AuthUser() authUser: User) {
+    return authUser;
+  }
 }
