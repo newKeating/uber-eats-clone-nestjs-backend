@@ -47,11 +47,10 @@ export class UserService {
   }
 
   async login({ email, password }: LoginInput): Promise<LoginOutput> {
-    // make a JWT and give it to the user
     try {
       const user = await this.users.findOne(
         { email },
-        { select: ['password', 'id'] },
+        { select: ['password'] },
       );
       if (!user) {
         return {
@@ -85,14 +84,11 @@ export class UserService {
       if (user) {
         return {
           ok: true,
-          user,
+          user: user,
         };
       }
     } catch (error) {
-      return {
-        ok: false,
-        error: 'User Not Found',
-      };
+      return { ok: false, error: 'User Not Found' };
     }
   }
 
@@ -100,8 +96,6 @@ export class UserService {
     userId: number,
     { email, password }: EditProfileInput,
   ): Promise<EditProfileOutput> {
-    // return this.users.update(userId, { ...editProfileInput });
-    // update method doesn't call Update hook !!!
     try {
       const user = await this.users.findOne(userId);
       if (email) {
@@ -112,16 +106,12 @@ export class UserService {
       if (password) {
         user.password = password;
       }
-
       await this.users.save(user);
       return {
         ok: true,
       };
     } catch (error) {
-      return {
-        ok: false,
-        error: 'Could not update profile',
-      };
+      return { ok: false, error: 'Could not update profile.' };
     }
   }
 
@@ -133,20 +123,13 @@ export class UserService {
       );
       if (verification) {
         verification.user.verified = true;
-        this.users.save(verification.user);
-        return {
-          ok: true,
-        };
+        await this.users.save(verification.user);
+        await this.verifications.delete(verification.id);
+        return { ok: true };
       }
-      return {
-        ok: false,
-        error: 'Verification not found.',
-      };
+      return { ok: false, error: 'Verification not found.' };
     } catch (error) {
-      return {
-        ok: false,
-        error,
-      };
+      return { ok: false, error };
     }
   }
 }
