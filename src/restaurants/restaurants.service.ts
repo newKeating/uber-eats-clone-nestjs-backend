@@ -9,6 +9,7 @@ import { Restaurant } from './entities/restaurant.entity';
 import { User } from '../users/entities/user.entity';
 import { Category } from './entities/category.entity';
 import { CategoryRepository } from './repositories/category.repository';
+import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import {
   DeleteRestaurantInput,
   DeleteRestaurantOutput,
@@ -17,6 +18,7 @@ import {
   EditRestaurantInput,
   EditRestaurantOutput,
 } from './dtos/edit-restaurant.dto';
+import { CategoryOutput, CategoryInput } from './dtos/category.dto';
 
 @Injectable()
 export class RestaurantService {
@@ -118,6 +120,60 @@ export class RestaurantService {
       return {
         ok: false,
         error: 'Could not delete restaurant',
+      };
+    }
+  }
+
+  async allCategories(): Promise<AllCategoriesOutput> {
+    try {
+      const categories = await this.categories.find();
+      return {
+        ok: true,
+        categories,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not load categories',
+      };
+    }
+  }
+
+  countRestaurants(category: Category): Promise<number> {
+    return this.restaurants.count({ category });
+  }
+
+  async findCategoryBySlug({
+    slug,
+    page,
+  }: CategoryInput): Promise<CategoryOutput> {
+    try {
+      const category = await this.categories.findOne({ slug });
+      if (!category) {
+        return {
+          ok: false,
+          error: 'Category not found',
+        };
+      }
+      const restaurants = await this.restaurants.find({
+        where: {
+          category,
+        },
+        take: 25,
+        skip: (page - 1) * 25,
+      });
+      category.restaurants = restaurants;
+      const totalResults = await this.countRestaurants(category);
+      const totalPages = Math.ceil(totalResults / 25);
+      return {
+        ok: true,
+        category,
+        totalPages,
+      };
+    } catch {
+      return {
+        ok: false,
+        error: 'Could not load category',
       };
     }
   }
