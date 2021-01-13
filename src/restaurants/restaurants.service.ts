@@ -232,10 +232,21 @@ export class RestaurantService {
     page,
   }: SearchRestaurantInput): Promise<SearchRestaurantOutput> {
     try {
+      // const transformedQuery = query.replace(/ /g, '%');
+      const formattedQuery = query.trim().replace(/ /g, ' & ');
+      // console.log('transformedQuery', transformedQuery);
       const [restaurants, totalResults] = await this.restaurants.findAndCount({
         where: {
           // name: Like(`%${query}%`),
-          name: Raw((name) => `${name} ILIKE '%${query}%'`),
+          // name: Raw((name) => `${name} ILIKE '%${transformedQuery}%'`),
+          // name: Raw((name) => `${name} ILIKE '%${query}%'`),
+          name: Raw(
+            (name) =>
+              `to_tsvector('simple', ${name}) @@ to_tsquery('simple', :query)`,
+            {
+              query: `${formattedQuery}:*`,
+            },
+          ),
         },
         skip: (page - 1) * 25,
         take: 25,
