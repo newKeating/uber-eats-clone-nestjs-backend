@@ -4,9 +4,9 @@ import { Dish } from './entities/dish.entity';
 import { Restaurant } from './entities/restaurant.entity';
 import { CategoryRepository } from './repositories/category.repository';
 import {
-  RestaurantResolver,
   CategoryResolver,
   DishResolver,
+  RestaurantResolver,
 } from './restaurants.resolver';
 import { RestaurantService } from './restaurants.service';
 
