@@ -37,6 +37,13 @@ export class PaymentsService {
           error: 'You are not allowed to do this.',
         };
       }
+
+      restaurant.isPromoted = true;
+      const date = new Date();
+      date.setDate(date.getDate() + 7);
+      restaurant.promotedUntil = date;
+      await this.restaurants.save(restaurant);
+
       await this.payments.save(
         this.payments.create({
           transactionId,
@@ -70,4 +77,9 @@ export class PaymentsService {
       };
     }
   }
+
+  // @Cron('30 * * * * *')
+  // async checkForPayments() {
+  //   console.log('Checking for payments....');
+  // }
 }

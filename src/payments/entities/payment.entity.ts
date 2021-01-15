@@ -1,5 +1,5 @@
 import { Field, InputType, Int, ObjectType } from '@nestjs/graphql';
-import { IsNumber } from 'class-validator';
+import { IsString } from 'class-validator';
 import { Column, Entity, ManyToOne, RelationId } from 'typeorm';
 import { CoreEntity } from '../../common/entities/core.entity';
 import { Restaurant } from '../../restaurants/entities/restaurant.entity';
@@ -11,7 +11,7 @@ import { User } from '../../users/entities/user.entity';
 export class Payment extends CoreEntity {
   @Field((type) => String)
   @Column()
-  @IsNumber()
+  @IsString()
   transactionId: string;
 
   @Field((type) => User)

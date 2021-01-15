@@ -1,6 +1,7 @@
 import { Injectable } from '@nestjs/common';
+import { Cron, CronExpression } from '@nestjs/schedule';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Raw, Repository } from 'typeorm';
+import { LessThan, Raw, Repository } from 'typeorm';
 import { User } from '../users/entities/user.entity';
 import { AllCategoriesOutput } from './dtos/all-categories.dto';
 import { CategoryInput, CategoryOutput } from './dtos/category.dto';
@@ -174,6 +175,7 @@ export class RestaurantService {
         take: 25,
         skip: (page - 1) * 25,
         order: {
+          isPromoted: 'DESC',
           createdAt: 'DESC',
         },
       });
@@ -199,6 +201,7 @@ export class RestaurantService {
         skip: (page - 1) * 25,
         take: 25,
         order: {
+          isPromoted: 'DESC',
           createdAt: 'DESC',
         },
       });
@@ -259,6 +262,7 @@ export class RestaurantService {
         skip: (page - 1) * 25,
         take: 25,
         order: {
+          isPromoted: 'DESC',
           createdAt: 'DESC',
         },
       });
@@ -378,5 +382,17 @@ export class RestaurantService {
         error: 'Could not delete dish',
       };
     }
+  }
+
+  @Cron(CronExpression.EVERY_DAY_AT_MIDNIGHT)
+  async checkPromotedRestaurants() {
+    const restaurants = await this.restaurants.find({
+      isPromoted: true,
+      promotedUntil: LessThan(new Date()),
+    });
+    restaurants.forEach(async (restaurant) => {
+      (restaurant.isPromoted = false), (restaurant.promotedUntil = null);
+      await this.restaurants.save(restaurant);
+    });
   }
 }
