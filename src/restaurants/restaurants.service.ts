@@ -204,6 +204,7 @@ export class RestaurantService {
           isPromoted: 'DESC',
           createdAt: 'DESC',
         },
+        relations: ['category'],
       });
 
       return {
