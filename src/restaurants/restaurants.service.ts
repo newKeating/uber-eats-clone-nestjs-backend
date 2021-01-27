@@ -179,11 +179,12 @@ export class RestaurantService {
           createdAt: 'DESC',
         },
       });
-      category.restaurants = restaurants;
+      // category.restaurants = restaurants;
       const totalResults = await this.countRestaurants(category);
       const totalPages = Math.ceil(totalResults / 25);
       return {
         ok: true,
+        restaurants,
         category,
         totalPages,
       };
