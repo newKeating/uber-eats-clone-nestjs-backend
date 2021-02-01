@@ -37,6 +37,8 @@ import { Dish } from './entities/dish.entity';
 import { CreateDishOutput, CreateDishInput } from './dtos/create-dish.dto';
 import { EditDishOutput, EditDishInput } from './dtos/edit-dish.dto';
 import { DeleteDishInput, DeleteDishOutput } from './dtos/delete-dish.dto';
+import { MyRestaurantOutput, MyRestaurantInput } from './dtos/my-restaurant';
+import { MyRestaurantsOutput } from './dtos/my-restaurants.dto';
 
 @Resolver((of) => Restaurant)
 export class RestaurantResolver {
@@ -87,6 +89,21 @@ export class RestaurantResolver {
     @Args('input') restaurantInput: RestaurantInput,
   ): Promise<RestaurantOutput> {
     return this.restaurantService.findRestaurantById(restaurantInput);
+  }
+
+  @Query((returns) => MyRestaurantOutput)
+  @Role(['Owner'])
+  myRestaurant(
+    @AuthUser() owner: User,
+    @Args('input') myRestaurantInput: MyRestaurantInput,
+  ): Promise<MyRestaurantOutput> {
+    return this.restaurantService.myRestaurant(owner, myRestaurantInput);
+  }
+
+  @Query((returns) => MyRestaurantsOutput)
+  @Role(['Owner'])
+  myRestaurants(@AuthUser() owner: User): Promise<MyRestaurantsOutput> {
+    return this.restaurantService.myRestaurants(owner);
   }
 
   @Query((returns) => SearchRestaurantOutput)
