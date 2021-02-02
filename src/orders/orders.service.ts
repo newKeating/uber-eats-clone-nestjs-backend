@@ -99,6 +99,7 @@ export class OrdersService {
       });
       return {
         ok: true,
+        orderId: order.id,
       };
     } catch (e) {
       console.log('CreateOrder-error', e);
