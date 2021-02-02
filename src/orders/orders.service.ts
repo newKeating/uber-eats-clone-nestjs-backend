@@ -173,7 +173,7 @@ export class OrdersService {
   ): Promise<GetOrderOutput> {
     try {
       const order = await this.orders.findOne(orderId, {
-        relations: ['restaurant'],
+        relations: ['restaurant', 'customer', 'driver'],
       });
       if (!order) {
         return {
